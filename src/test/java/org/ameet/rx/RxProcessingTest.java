@@ -1,3 +1,5 @@
+package org.ameet.rx;
+
 import org.ameet.rx.RxProcessing;
 import org.ameet.rx.ancillary.BasicStringSubscriberWithLatch;
 import org.ameet.rx.ancillary.TaskUtility;
