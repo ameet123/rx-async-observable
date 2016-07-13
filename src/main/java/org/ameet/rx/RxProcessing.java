@@ -2,6 +2,7 @@ package org.ameet.rx;
 
 import org.ameet.rx.ancillary.BasicStringSubscriber;
 import org.ameet.rx.ancillary.BasicStringSubscriberWithLatch;
+import org.ameet.rx.model.QuoteResource;
 import rx.Observable;
 
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -95,5 +97,9 @@ public class RxProcessing {
             o = o.mergeWith(o1);
         }
         return o;
+    }
+
+    public Observable<QuoteResource> getSingleQuoteFuture(FutureTask<QuoteResource> quoteResourceFutureTask) {
+        return Observable.from(quoteResourceFutureTask);
     }
 }

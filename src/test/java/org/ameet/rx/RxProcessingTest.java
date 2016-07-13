@@ -1,7 +1,7 @@
 package org.ameet.rx;
 
-import org.ameet.rx.RxProcessing;
 import org.ameet.rx.ancillary.BasicStringSubscriberWithLatch;
+import org.ameet.rx.ancillary.QuoteSubscriberWithLatch;
 import org.ameet.rx.ancillary.RestUtility;
 import org.ameet.rx.ancillary.TaskUtility;
 import org.ameet.rx.model.QuoteResource;
@@ -14,8 +14,6 @@ import rx.observers.TestSubscriber;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 /**
@@ -125,10 +123,50 @@ public class RxProcessingTest {
      * test basic http access using spring rest template
      */
     @Test
-    public void testRestTemplate(){
-       QuoteResource m =  RestUtility.getRandomQuote();
+    public void testRestTemplate() {
+        QuoteResource m = RestUtility.getRandomQuote();
         System.out.println(m);
     }
+
+    /**
+     * test getting a single quote as a future and adding it to observable
+     * Important. ***
+     * Unless the FutureTask is actually submitted for execution,
+     * the subscription of subscriber to the observable will HANG.
+     */
+    @Test
+    public void testSingleQuoteFuture() {
+        long start = System.currentTimeMillis();
+        System.out.println("1. creating future task");
+        FutureTask<QuoteResource> f = TaskUtility.getSingleQuoteFuture(false);
+        System.out.println("1.1 creating future task completed");
+
+        System.out.println("2. Creating Observable " );
+        Observable<QuoteResource> o = rxProcessing.getSingleQuoteFuture(f);
+        System.out.println("2.1 Observable created in: " + getMilliElapsed(start));
+
+        // at this point, the task has not started running, do it now
+        System.out.println("3 starting the task on threadpool");
+        TaskUtility.runFutureTask(f);
+        System.out.println("3.1 running task submission completed");
+
+        // *** Subscription cannot happen until actual task has run ***
+        // create subscriber
+        QuoteSubscriberWithLatch s = new QuoteSubscriberWithLatch();
+        // subscribe to the events
+        System.out.println("4 Starting Subscription ");
+        o.subscribe(s);
+        System.out.println("4.1Subscription started in: " + getMilliElapsed(start));
+
+
+
+        s.awaitTerminalEvent();
+        System.out.println("Termination in: " + getMilliElapsed(start));
+
+        List<QuoteResource> actual = s.getResults();
+        System.out.println(actual);
+    }
+
     private long getMilliElapsed(long start) {
         return System.currentTimeMillis() - start;
     }

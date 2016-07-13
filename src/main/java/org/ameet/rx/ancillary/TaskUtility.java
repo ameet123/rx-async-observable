@@ -1,5 +1,7 @@
 package org.ameet.rx.ancillary;
 
+import org.ameet.rx.model.QuoteResource;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -19,6 +21,7 @@ public class TaskUtility {
     /**
      * generate of list of numbers converted to string
      * starting with 1 and inclusive of the provided count
+     *
      * @param count
      * @return
      */
@@ -58,5 +61,33 @@ public class TaskUtility {
             }));
         }
         return futures;
+    }
+
+    /**
+     * create a futureTask out of a quote by optionally adding a delay.
+     *
+     * @param isDelay
+     * @return
+     */
+    public static FutureTask<QuoteResource> getSingleQuoteFuture(boolean isDelay) {
+        FutureTask<QuoteResource> fqTask;
+        if (isDelay) {
+            fqTask = new FutureTask<QuoteResource>(() -> RestUtility
+                    .getRandomQuoteWithDelay(RestUtility.SAFE_DELAY));
+        } else {
+            System.out.println("---> Running random quote no delay");
+            fqTask = new FutureTask<QuoteResource>(() -> RestUtility.getRandomQuote());
+        }
+        return fqTask;
+    }
+
+    /**
+     * simply take a futureTask or {@link Runnable} and execute it using the {@link ExecutorService}
+     *
+     * @param futureTask
+     * @param <T>
+     */
+    public static <T> void runFutureTask(FutureTask<T> futureTask) {
+        service.execute(futureTask);
     }
 }

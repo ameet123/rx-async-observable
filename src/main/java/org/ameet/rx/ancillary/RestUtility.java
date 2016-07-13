@@ -13,6 +13,8 @@ public class RestUtility {
     private static final String QUOTE_URL = "http://gturnquist-quoters.cfapps.io/api/random";
     private static final int TIMEOUT_MS = 3000;
     private static final RestTemplate restTemplate = new RestTemplate();
+    public static final long SAFE_DELAY = 2000;
+    public static final long EXCEED_DELAY = 4000;
 
     private static ClientHttpRequestFactory clientHttpRequestFactory() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
@@ -29,6 +31,22 @@ public class RestUtility {
     public static QuoteResource getRandomQuote() {
         QuoteResource q = restTemplate.getForObject(QUOTE_URL, QuoteResource.class);
         q.getValue().setThreadName(getThreadName());
+        return q;
+    }
+
+    /**
+     * add intentional delay
+     * @param delay
+     * @return
+     */
+    public static QuoteResource getRandomQuoteWithDelay(long delay) {
+        QuoteResource q = restTemplate.getForObject(QUOTE_URL, QuoteResource.class);
+        q.getValue().setThreadName(getThreadName());
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return q;
     }
 
