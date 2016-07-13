@@ -10,11 +10,11 @@ import org.springframework.web.client.RestTemplate;
  * a utility class to make http requests to a url and retrieve results
  */
 public class RestUtility {
+    public static final long SAFE_DELAY = 2000;
+    public static final long EXCEED_DELAY = 4000;
     private static final String QUOTE_URL = "http://gturnquist-quoters.cfapps.io/api/random";
     private static final int TIMEOUT_MS = 3000;
     private static final RestTemplate restTemplate = new RestTemplate();
-    public static final long SAFE_DELAY = 2000;
-    public static final long EXCEED_DELAY = 4000;
 
     private static ClientHttpRequestFactory clientHttpRequestFactory() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
@@ -36,10 +36,12 @@ public class RestUtility {
 
     /**
      * add intentional delay
+     *
      * @param delay
      * @return
      */
     public static QuoteResource getRandomQuoteWithDelay(long delay) {
+        System.out.println("fetching quote...");
         QuoteResource q = restTemplate.getForObject(QUOTE_URL, QuoteResource.class);
         q.getValue().setThreadName(getThreadName());
         try {

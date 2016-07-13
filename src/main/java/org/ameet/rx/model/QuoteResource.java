@@ -3,6 +3,7 @@ package org.ameet.rx.model;
 /**
  * Created by achaub001c on 7/12/2016.
  */
+
 /**
  * quote wrapper model entity
  */
@@ -29,9 +30,9 @@ public class QuoteResource {
 
     @Override
     public String toString() {
-        return "QuoteResource{" +
-                "type='" + type + '\'' +
-                ", value=" + value +
-                '}';
+        return "QuoteResource{\n" +
+                "\ttype='" + type + '\'' +
+                ", \n\tvalue=" + value +
+                "}\n";
     }
 }

@@ -104,6 +104,7 @@ public class RxProcessing {
 
     /**
      * get an observable from a callable and construct it to run on specified executors
+     *
      * @param callable
      * @return
      */
@@ -144,5 +145,16 @@ public class RxProcessing {
     public Observable<String> getFromRunnableWithExecutorService(Callable<String> callable) {
         return Observable.fromCallable(callable).
                 subscribeOn(Schedulers.newThread()).observeOn(Schedulers.from(GenericUtil.SERVICE));
+    }
+
+    /**
+     * from a list of callables, construct a single observable
+     */
+    public Observable<QuoteResource> getFromCallableList(List<Callable<QuoteResource>> callableList) {
+        Observable<QuoteResource> o = Observable.fromCallable(callableList.get(0));
+        for (int i = 1; i < callableList.size(); i++) {
+            o = Observable.merge(o, Observable.fromCallable(callableList.get(i)));
+        }
+        return o.subscribeOn(Schedulers.newThread()).observeOn(Schedulers.from(GenericUtil.SERVICE));
     }
 }

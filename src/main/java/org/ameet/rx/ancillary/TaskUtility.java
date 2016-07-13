@@ -99,6 +99,25 @@ public class TaskUtility {
     }
 
     /**
+     * a List of quote retrieving callables
+     *
+     * @param isDelay
+     * @param count   number of callables in the list
+     * @return
+     */
+    public static List<Callable<QuoteResource>> getListQuoteCallable(boolean isDelay, int count) {
+        List<Callable<QuoteResource>> callableList = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            if (isDelay) {
+                callableList.add(() -> RestUtility.getRandomQuoteWithDelay(RestUtility.SAFE_DELAY));
+            } else {
+                callableList.add(() -> RestUtility.getRandomQuote());
+            }
+        }
+        return callableList;
+    }
+
+    /**
      * simply take a futureTask or {@link Runnable} and execute it using the {@link ExecutorService}
      *
      * @param futureTask

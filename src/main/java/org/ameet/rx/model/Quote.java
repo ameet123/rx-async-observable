@@ -14,6 +14,7 @@ public class Quote {
 
     int id;
     String quote;
+    String threadName;
 
     public String getThreadName() {
         return threadName;
@@ -22,8 +23,6 @@ public class Quote {
     public void setThreadName(String threadName) {
         this.threadName = threadName;
     }
-
-    String threadName;
 
     public int getId() {
         return id;
@@ -43,7 +42,7 @@ public class Quote {
 
     @Override
     public String toString() {
-        return "[ id-"+threadName+':'+ quote +']';
+        return "[ \n\t\tid-" + threadName + ":\n\t\t" + quote + "\n\t]\n";
     }
 
 
