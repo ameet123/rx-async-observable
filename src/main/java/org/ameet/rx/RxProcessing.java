@@ -2,16 +2,15 @@ package org.ameet.rx;
 
 import org.ameet.rx.ancillary.BasicStringSubscriber;
 import org.ameet.rx.ancillary.BasicStringSubscriberWithLatch;
+import org.ameet.rx.ancillary.GenericUtil;
 import org.ameet.rx.model.QuoteResource;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Created by achaub001c on 7/12/2016.
@@ -101,5 +100,49 @@ public class RxProcessing {
 
     public Observable<QuoteResource> getSingleQuoteFuture(FutureTask<QuoteResource> quoteResourceFutureTask) {
         return Observable.from(quoteResourceFutureTask);
+    }
+
+    /**
+     * get an observable from a callable and construct it to run on specified executors
+     * @param callable
+     * @return
+     */
+    public Observable<QuoteResource> getSingleQuoteFromCallable(Callable<QuoteResource> callable) {
+        return Observable.fromCallable(callable).subscribeOn(Schedulers.newThread())
+                .observeOn(Schedulers.from(GenericUtil.SERVICE));
+    }
+
+    /**
+     * enables Rx to run the callable - albeit on the same main thread
+     *
+     * @param callable
+     * @return
+     */
+    public Observable<String> getFromRunnable(Callable<String> callable) {
+        return Observable.fromCallable(callable);
+    }
+
+    /**
+     * supplies a new thread for each subscriber
+     * had to supply the subscribeOn to actually see a new thread
+     * RxNewThreadScheduler-2 spawned.
+     *
+     * @param callable
+     * @return
+     */
+    public Observable<String> getFromRunnableOnThread(Callable<String> callable) {
+        return Observable.fromCallable(callable).
+                subscribeOn(Schedulers.newThread()).observeOn(Schedulers.newThread());
+    }
+
+    /**
+     * an observable that uses an existing executor service
+     *
+     * @param callable
+     * @return
+     */
+    public Observable<String> getFromRunnableWithExecutorService(Callable<String> callable) {
+        return Observable.fromCallable(callable).
+                subscribeOn(Schedulers.newThread()).observeOn(Schedulers.from(GenericUtil.SERVICE));
     }
 }

@@ -4,8 +4,8 @@ import org.ameet.rx.model.QuoteResource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
  * utility class to create simple callables returning futures
  */
 public class TaskUtility {
-    private static ExecutorService service = Executors.newFixedThreadPool(10);
+
 
     /**
      * generate of list of numbers converted to string
@@ -55,7 +55,7 @@ public class TaskUtility {
     public static List<Future<String>> submitListOfTasks(List<String> values, long delayMilli) {
         List<Future<String>> futures = new ArrayList<>();
         for (String v : values) {
-            futures.add(service.submit(() -> {
+            futures.add(GenericUtil.SERVICE.submit(() -> {
                 Thread.sleep(delayMilli);
                 return v;
             }));
@@ -78,7 +78,24 @@ public class TaskUtility {
             System.out.println("---> Running random quote no delay");
             fqTask = new FutureTask<QuoteResource>(() -> RestUtility.getRandomQuote());
         }
+
         return fqTask;
+    }
+
+    /**
+     * instead of {@link FutureTask} present a callable so that it can be run by observable
+     *
+     * @param isDelay
+     * @return
+     */
+    public static Callable<QuoteResource> getSingleQuoteCallable(boolean isDelay) {
+        Callable<QuoteResource> fqTask;
+        if (isDelay) {
+            return () -> RestUtility.getRandomQuoteWithDelay(RestUtility.SAFE_DELAY);
+        } else {
+            System.out.println("---> Running random quote no delay");
+            return () -> RestUtility.getRandomQuote();
+        }
     }
 
     /**
@@ -88,6 +105,16 @@ public class TaskUtility {
      * @param <T>
      */
     public static <T> void runFutureTask(FutureTask<T> futureTask) {
-        service.execute(futureTask);
+        GenericUtil.SERVICE.execute(futureTask);
+    }
+
+    public static Callable<String> getSingleStringCallable(String v) {
+        Callable<String> c = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return Thread.currentThread().getId() + ":" + Thread.currentThread().getName() + " => " + v;
+            }
+        };
+        return c;
     }
 }

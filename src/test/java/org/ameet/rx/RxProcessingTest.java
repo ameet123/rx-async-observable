@@ -1,9 +1,6 @@
 package org.ameet.rx;
 
-import org.ameet.rx.ancillary.BasicStringSubscriberWithLatch;
-import org.ameet.rx.ancillary.QuoteSubscriberWithLatch;
-import org.ameet.rx.ancillary.RestUtility;
-import org.ameet.rx.ancillary.TaskUtility;
+import org.ameet.rx.ancillary.*;
 import org.ameet.rx.model.QuoteResource;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -106,14 +103,14 @@ public class RxProcessingTest {
         List<Future<String>> futures = TaskUtility.submitListOfTasks(expectedList, 2000);
         Observable<String> o = rxProcessing.getListOfFuturesObservable(futures, 2000);
 
-        System.out.println("Observable created in: " + getMilliElapsed(start));
+        System.out.println("Observable created in: " + GenericUtil.getMilliElapsed(start));
         // create subscriber
         BasicStringSubscriberWithLatch s = rxProcessing.getSingleSubscriberWithBuiltInResultList();
         // subscribe to the events
         o.subscribe(s);
-        System.out.println("Subscription started in: " + getMilliElapsed(start));
+        System.out.println("Subscription started in: " + GenericUtil.getMilliElapsed(start));
         s.awaitTerminalEvent();
-        System.out.println("Termination in: " + getMilliElapsed(start));
+        System.out.println("Termination in: " + GenericUtil.getMilliElapsed(start));
 
         List<String> actual = s.getResults();
         System.out.println(Arrays.toString(actual.toArray()));
@@ -133,6 +130,9 @@ public class RxProcessingTest {
      * Important. ***
      * Unless the FutureTask is actually submitted for execution,
      * the subscription of subscriber to the observable will HANG.
+     * <p>
+     * This uses external executor service to run the task and simply manage the futures using
+     * observables
      */
     @Test
     public void testSingleQuoteFuture() {
@@ -141,9 +141,9 @@ public class RxProcessingTest {
         FutureTask<QuoteResource> f = TaskUtility.getSingleQuoteFuture(false);
         System.out.println("1.1 creating future task completed");
 
-        System.out.println("2. Creating Observable " );
+        System.out.println("2. Creating Observable ");
         Observable<QuoteResource> o = rxProcessing.getSingleQuoteFuture(f);
-        System.out.println("2.1 Observable created in: " + getMilliElapsed(start));
+        System.out.println("2.1 Observable created in: " + GenericUtil.getMilliElapsed(start));
 
         // at this point, the task has not started running, do it now
         System.out.println("3 starting the task on threadpool");
@@ -156,18 +156,70 @@ public class RxProcessingTest {
         // subscribe to the events
         System.out.println("4 Starting Subscription ");
         o.subscribe(s);
-        System.out.println("4.1Subscription started in: " + getMilliElapsed(start));
-
+        System.out.println("4.1Subscription started in: " + GenericUtil.getMilliElapsed(start));
 
 
         s.awaitTerminalEvent();
-        System.out.println("Termination in: " + getMilliElapsed(start));
+        System.out.println("Termination in: " + GenericUtil.getMilliElapsed(start));
 
         List<QuoteResource> actual = s.getResults();
         System.out.println(actual);
     }
 
-    private long getMilliElapsed(long start) {
-        return System.currentTimeMillis() - start;
+    /**
+     * try to get observable to "run" the jobs in addition to managing their outcomes
+     */
+    @Test
+    public void testCallable() {
+        Callable<String> callable = TaskUtility.getSingleStringCallable(SINGLE_FUTURE_TASK);
+        Observable o = rxProcessing.getFromRunnable(callable);
+        BasicStringSubscriberWithLatch s = new BasicStringSubscriberWithLatch();
+        o.subscribe(s);
+        s.awaitTerminalEvent();
+        System.out.println(s.getResults());
+    }
+
+    /**
+     * same as above, just with a new thread for subscriber
+     */
+    @Test
+    public void testCallableNewThread() {
+        Callable<String> callable = TaskUtility.getSingleStringCallable(SINGLE_FUTURE_TASK);
+        Observable o = rxProcessing.getFromRunnableOnThread(callable);
+        BasicStringSubscriberWithLatch s = new BasicStringSubscriberWithLatch();
+        o.subscribe(s);
+        s.awaitTerminalEvent();
+        System.out.println(s.getResults());
+    }
+
+    /**
+     * this is similar to a test above, but instead of using an external
+     * executor service to run the callable, we will employ the observable to do the same
+     */
+    @Test
+    public void testSingleQuoteFutureWithInbuiltExecutor() {
+        long start = System.currentTimeMillis();
+        System.out.println("1. creating callable task");
+        Callable<QuoteResource> f = TaskUtility.getSingleQuoteCallable(false);
+        System.out.println("1.1 creating callable task completed");
+
+        System.out.println("2. Creating Observable ");
+        Observable<QuoteResource> o = rxProcessing.getSingleQuoteFromCallable(f);
+        System.out.println("2.1 Observable created in: " + GenericUtil.getMilliElapsed(start));
+
+        // *** Subscription cannot happen until actual task has run ***
+        // create subscriber
+        QuoteSubscriberWithLatch s = new QuoteSubscriberWithLatch();
+        // subscribe to the events
+        System.out.println("4 Starting Subscription ");
+        o.subscribe(s);
+        System.out.println("4.1Subscription started in: " + GenericUtil.getMilliElapsed(start));
+
+
+        s.awaitTerminalEvent();
+        System.out.println("Termination in: " + GenericUtil.getMilliElapsed(start));
+
+        List<QuoteResource> actual = s.getResults();
+        System.out.println(actual);
     }
 }
