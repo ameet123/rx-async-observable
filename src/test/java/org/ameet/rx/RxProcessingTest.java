@@ -228,7 +228,7 @@ public class RxProcessingTest {
     @Test
     public void testListQuoteWithInbuiltExecutor() {
         ObservableUtil o = new ObservableUtil();
-        List<QuoteResource> actual = o.processListOfQuotes();
+        List<QuoteResource> actual = o.processListOfQuotes(10, false);
         System.out.println(actual);
     }
 }

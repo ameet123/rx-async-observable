@@ -26,14 +26,15 @@ public class ObservableUtil {
     /**
      * collects all the relevant methods and packages them into a single method
      */
-    public List<QuoteResource> processListOfQuotes() {
+    public List<QuoteResource> processListOfQuotes(int cnt, boolean isIntroduceDelay) {
         long start = System.currentTimeMillis();
         System.out.println("1. creating callable task list");
-        List<Callable<QuoteResource>> f = TaskUtility.getListQuoteCallable(false, 2);
+        List<Callable<QuoteResource>> f = TaskUtility.getListQuoteCallable(isIntroduceDelay, cnt);
         System.out.println("1.1 creating callable task completed");
 
         System.out.println("2. Creating Observable for list of callables");
         Observable<QuoteResource> o = rxProcessing.getFromCallableList(f);
+//        Observable<QuoteResource> o = rxProcessing.getAsyncFromCallableList(f);
         System.out.println("2.1 Observable created in: " + GenericUtil.getMilliElapsed(start));
 
         // create subscriber

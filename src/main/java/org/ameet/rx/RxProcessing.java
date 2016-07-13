@@ -6,6 +6,7 @@ import org.ameet.rx.ancillary.GenericUtil;
 import org.ameet.rx.model.QuoteResource;
 import rx.Observable;
 import rx.schedulers.Schedulers;
+import rx.util.async.Async;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -149,12 +150,38 @@ public class RxProcessing {
 
     /**
      * from a list of callables, construct a single observable
+     * ***IMP*** Adding observeOn() has no effect on the actual processing,
+     * that is not done in parallel because of observeOn() threadpool
+     * but adding subscribeOn() did indeed make it go parallel
      */
     public Observable<QuoteResource> getFromCallableList(List<Callable<QuoteResource>> callableList) {
-        Observable<QuoteResource> o = Observable.fromCallable(callableList.get(0));
+        Observable<QuoteResource> o = Observable.fromCallable(callableList.get(0)).
+                subscribeOn(Schedulers.from(GenericUtil.SERVICE)).
+                observeOn(Schedulers.from(GenericUtil.SERVICE));
         for (int i = 1; i < callableList.size(); i++) {
-            o = Observable.merge(o, Observable.fromCallable(callableList.get(i)));
+            o = Observable.merge(o, Observable.fromCallable(callableList.get(i)).
+                    subscribeOn(Schedulers.from(GenericUtil.SERVICE)).
+                    observeOn(Schedulers.from(GenericUtil.SERVICE)));
         }
-        return o.subscribeOn(Schedulers.newThread()).observeOn(Schedulers.from(GenericUtil.SERVICE));
+        return o.
+                subscribeOn(Schedulers.from(GenericUtil.SERVICE)).
+                observeOn(Schedulers.from(GenericUtil.SERVICE));
+    }
+
+    /**
+     * same thing as above, but using Async class from rx java async util
+     * @param callableList
+     * @return
+     */
+    public Observable<QuoteResource> getAsyncFromCallableList(List<Callable<QuoteResource>> callableList) {
+        Observable<QuoteResource> o = Async.fromCallable(callableList.get(0)).
+                observeOn(Schedulers.from(GenericUtil.SERVICE));
+        for (int i = 1; i < callableList.size(); i++) {
+            o = Observable.merge(o, Async.fromCallable(callableList.get(i)).
+                    observeOn(Schedulers.from(GenericUtil.SERVICE)));
+        }
+        return o.
+                subscribeOn(Schedulers.from(GenericUtil.SERVICE)).
+                observeOn(Schedulers.from(GenericUtil.SERVICE));
     }
 }
