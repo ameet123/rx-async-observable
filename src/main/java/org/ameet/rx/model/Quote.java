@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Quote {
 
-    Long id;
+    int id;
     String quote;
 
     public String getThreadName() {
@@ -25,11 +25,11 @@ public class Quote {
 
     String threadName;
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -45,4 +45,6 @@ public class Quote {
     public String toString() {
         return "[ id-"+threadName+':'+ quote +']';
     }
+
+
 }

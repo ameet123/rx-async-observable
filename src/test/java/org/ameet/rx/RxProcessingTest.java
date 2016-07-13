@@ -2,7 +2,9 @@ package org.ameet.rx;
 
 import org.ameet.rx.RxProcessing;
 import org.ameet.rx.ancillary.BasicStringSubscriberWithLatch;
+import org.ameet.rx.ancillary.RestUtility;
 import org.ameet.rx.ancillary.TaskUtility;
+import org.ameet.rx.model.QuoteResource;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,6 +14,8 @@ import rx.observers.TestSubscriber;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 /**
@@ -117,6 +121,14 @@ public class RxProcessingTest {
         System.out.println(Arrays.toString(actual.toArray()));
     }
 
+    /**
+     * test basic http access using spring rest template
+     */
+    @Test
+    public void testRestTemplate(){
+       QuoteResource m =  RestUtility.getRandomQuote();
+        System.out.println(m);
+    }
     private long getMilliElapsed(long start) {
         return System.currentTimeMillis() - start;
     }

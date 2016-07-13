@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 public class RestUtility {
     private static final String QUOTE_URL = "http://gturnquist-quoters.cfapps.io/api/random";
     private static final int TIMEOUT_MS = 3000;
-    private static final RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
+    private static final RestTemplate restTemplate = new RestTemplate();
 
     private static ClientHttpRequestFactory clientHttpRequestFactory() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
@@ -26,7 +26,13 @@ public class RestUtility {
      *
      * @return
      */
-    public QuoteResource getRandomQuote() {
-        return restTemplate.getForObject(QUOTE_URL, QuoteResource.class);
+    public static QuoteResource getRandomQuote() {
+        QuoteResource q = restTemplate.getForObject(QUOTE_URL, QuoteResource.class);
+        q.getValue().setThreadName(getThreadName());
+        return q;
+    }
+
+    private static String getThreadName() {
+        return Thread.currentThread().getName();
     }
 }
