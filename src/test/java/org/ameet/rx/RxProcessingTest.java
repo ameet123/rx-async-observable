@@ -227,26 +227,8 @@ public class RxProcessingTest {
      */
     @Test
     public void testListQuoteWithInbuiltExecutor() {
-        long start = System.currentTimeMillis();
-        System.out.println("1. creating callable task list");
-        List<Callable<QuoteResource>> f = TaskUtility.getListQuoteCallable(false,2);
-        System.out.println("1.1 creating callable task completed");
-
-        System.out.println("2. Creating Observable for list of callables");
-        Observable<QuoteResource> o = rxProcessing.getFromCallableList(f);
-        System.out.println("2.1 Observable created in: " + GenericUtil.getMilliElapsed(start));
-
-        // create subscriber
-        QuoteSubscriberWithLatch s = new QuoteSubscriberWithLatch();
-        // subscribe to the events
-        System.out.println("4 Starting Subscription ");
-        o.subscribe(s);
-        System.out.println("4.1Subscription started in: " + GenericUtil.getMilliElapsed(start));
-
-        s.awaitTerminalEvent();
-        System.out.println("Termination in: " + GenericUtil.getMilliElapsed(start));
-
-        List<QuoteResource> actual = s.getResults();
+        ObservableUtil o = new ObservableUtil();
+        List<QuoteResource> actual = o.processListOfQuotes();
         System.out.println(actual);
     }
 }
