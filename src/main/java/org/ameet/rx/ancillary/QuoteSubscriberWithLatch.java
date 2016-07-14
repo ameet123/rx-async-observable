@@ -23,7 +23,6 @@ public class QuoteSubscriberWithLatch extends Subscriber<QuoteResource> {
         this.results = new ArrayList<>();
         this.countDownLatch = new CountDownLatch(1);
     }
-
     public List<QuoteResource> getResults() {
         return results;
     }
